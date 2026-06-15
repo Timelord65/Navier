@@ -75,8 +75,10 @@ public class TorrentDownloader {
                 if (System.currentTimeMillis() - lastTrackerRefresh >= TRACKER_REFRESH_MS) {
                     lastTrackerRefresh = System.currentTimeMillis();
                     try {
+                        long downloadedBytes = Math.min(
+                                (long) pieceManager.completedCount() * metadata.pieceLength, metadata.totalSize);
                         List<TrackerClient.Peer> peers = TrackerClient.collectPeersFromUrls(
-                                trackerUrls, metadata, myPeerId);
+                                trackerUrls, metadata, myPeerId, downloadedBytes);
                         System.out.println("\nTracker refresh: " + peers.size() + " peers");
                         connectToPeers(peers, connectedPeers, pieceManager, storage, diskExecutor, networkExecutor);
                     } catch (Exception e) {
@@ -86,6 +88,7 @@ public class TorrentDownloader {
             }
 
             System.out.println("\nDownload complete.");
+            TrackerClient.announceCompletedToAll(trackerUrls, metadata, myPeerId, metadata.totalSize);
 
         } finally {
             networkExecutor.shutdownNow();

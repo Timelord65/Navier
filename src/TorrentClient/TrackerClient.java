@@ -54,11 +54,16 @@ public class TrackerClient {
     }
 
     public static List<Peer> collectPeersFromUrls(List<String> urls, TorrentMetadata metadata, byte[] peerId) throws Exception {
+        return collectPeersFromUrls(urls, metadata, peerId, 0);
+    }
+
+    public static List<Peer> collectPeersFromUrls(List<String> urls, TorrentMetadata metadata, byte[] peerId, long downloadedBytes) throws Exception {
         List<Peer> allPeers = new ArrayList<>();
         Set<String> seen = new HashSet<>();
         for (String url : urls) {
             try {
                 TrackerClient client = new TrackerClient(metadata, peerId, url, 51413);
+                client.updateDownloaded(downloadedBytes);
                 for (Peer peer : client.announceStarted()) {
                     String key = peer.ip() + ":" + peer.port();
                     if (seen.add(key)) {
@@ -70,6 +75,18 @@ public class TrackerClient {
             }
         }
         return allPeers;
+    }
+
+    public static void announceCompletedToAll(List<String> urls, TorrentMetadata metadata, byte[] peerId, long downloadedBytes) {
+        for (String url : urls) {
+            try {
+                TrackerClient client = new TrackerClient(metadata, peerId, url, 51413);
+                client.updateDownloaded(downloadedBytes);
+                client.getPeers("completed");
+            } catch (Exception e) {
+                System.err.println("Tracker " + url + " completed announce failed: " + e.getMessage());
+            }
+        }
     }
 
     public static byte[] generatePeerId() {

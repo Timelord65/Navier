@@ -12,8 +12,8 @@ public enum BencodeType {
         this.indicator = indicator;
     }
 
-    char getIndicator(BencodeType type){
-        return type.indicator;
+    char getIndicator(){
+        return this.indicator;
     }
 
     public static BencodeType fromIndicator(char b){
@@ -21,7 +21,7 @@ public enum BencodeType {
             return STRING;
         }
         for(BencodeType type: BencodeType.values()){
-            if(type.getIndicator(type) == b){
+            if(type.getIndicator() == b){
                 return type;
             }
         }

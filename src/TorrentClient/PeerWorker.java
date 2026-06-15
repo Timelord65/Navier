@@ -229,9 +229,8 @@ public class PeerWorker implements Runnable {
         byte[] blockData = new byte[dataLength];
         buffer.get(blockData);
 
-        if (activePiece.inFlight > 0) activePiece.inFlight--;
-
         boolean newBlock = activePiece.recordBlock(blockOffset, blockData);
+        if (activePiece.inFlight > 0) activePiece.inFlight--;
         if (!newBlock) {
             requestMoreBlocks();
             return;
